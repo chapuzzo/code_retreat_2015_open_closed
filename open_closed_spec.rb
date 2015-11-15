@@ -57,6 +57,18 @@ describe 'map' do
   end
 end
 
+describe 'TwoDimensions map' do
+  it 'represents itself as a string' do
+    map = TwoDimensions.new 1, 1
+
+    expect(map.to_s).to eq('.')
+
+    map = TwoDimensions.new 2, 2
+
+    expect(map.to_s).to eq(". .\n. .")
+  end
+end
+
 describe 'Position' do
   it 'knows its neighbourhood' do
     position = Position.new
@@ -101,6 +113,19 @@ class Map
 
   def ask position
     @positions[position]
+  end
+end
+
+class TwoDimensions < Map
+  DIMENSIONS = 2
+
+  def initialize x, y
+    @x = x
+    @y = y
+  end
+
+  def to_s
+    ([ ('. ' * @x).strip ] * @y).join "\n"
   end
 end
 
