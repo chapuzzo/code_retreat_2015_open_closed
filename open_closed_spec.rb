@@ -29,6 +29,19 @@ describe 'game' do
 
     game.evolve_position(position)
   end
+
+  it 'spawns a cell when rules say so' do
+    position = Position.new
+    rules = Overpolulate.new
+    map = Map.new
+    game = Game.new map, rules
+
+    expect(rules).to receive(:apply).with(position).and_call_original
+    expect(position).to receive(:neighbours).and_call_original
+    expect(map).to receive(:set_alive).with(position).and_call_original
+
+    game.evolve_position(position)
+  end
 end
 
 describe 'map' do
@@ -104,5 +117,12 @@ class KillEmAll < Rules
   def apply position
     position.neighbours
     :dead
+  end
+end
+
+class Overpolulate < Rules
+  def apply position
+    position.neighbours
+    :alive
   end
 end
