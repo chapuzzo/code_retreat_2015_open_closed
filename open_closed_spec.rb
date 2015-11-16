@@ -69,6 +69,89 @@ describe 'TwoDimensions map' do
   end
 end
 
+
+describe 'ThreeDimensions map' do
+  it 'represents itself as a string' do
+    map = ThreeDimensions.new 1, 1, 1
+
+    expect(map.to_s).to eq(
+"""
+  +===+
+ / o /
++===+
+""".chomp.gsub(/^\n/, '')
+)
+
+    map = ThreeDimensions.new 2, 1, 1
+
+    expect(map.to_s).to eq(
+"""
+  +===+===+
+ / o / o /
++===+===+
+""".chomp.gsub(/^\n/, '')
+)
+
+    map = ThreeDimensions.new 2, 1, 2
+
+    expect(map.to_s).to eq(
+"""
+    +===+===+
+   / o / o /
+  +---+---+
+ / o / o /
++===+===+
+""".chomp.gsub(/^\n/, '')
+)
+
+    map = ThreeDimensions.new 2, 2, 2
+
+    expect(map.to_s).to eq(
+"""
+    +===+===+
+   / o / o /
+  +---+---+
+ / o / o /
++===+===+
+    +===+===+
+   / o / o /
+  +---+---+
+ / o / o /
++===+===+
+""".chomp.gsub(/^\n/, '')
+)
+
+    map = ThreeDimensions.new 3, 3, 3
+
+    expect(map.to_s).to eq(
+
+"""
+      +===+===+===+
+     / o / o / o /
+    +---+---+---+
+   / o / o / o /
+  +---+---+---+
+ / o / o / o /
++===+===+===+
+      +===+===+===+
+     / o / o / o /
+    +---+---+---+
+   / o / o / o /
+  +---+---+---+
+ / o / o / o /
++===+===+===+
+      +===+===+===+
+     / o / o / o /
+    +---+---+---+
+   / o / o / o /
+  +---+---+---+
+ / o / o / o /
++===+===+===+
+""".chomp.gsub(/^\n/, '')
+)
+  end
+end
+
 describe 'Position' do
   it 'knows its neighbourhood' do
     position = Position.new
@@ -127,6 +210,86 @@ class TwoDimensions < Map
   def to_s
     ([ ('. ' * @x).strip ] * @y).join "\n"
   end
+end
+
+class ThreeDimensions < Map
+  DIMENSIONS = 3
+
+  def initialize x, y, z
+    @x = x
+    @y = y
+    @z = z
+  end
+
+  def to_s
+    skewed_to_s
+  end
+
+  private
+    def skewed_to_s
+      @y.times.map { |row|
+        draw_floor row
+      }.join("\n")
+    end
+
+    def draw_floor row
+      [
+        header(@x, @z),
+        @z.times.reverse_each.map {|depth|
+          draw_depth(depth, row)
+        }.zip((@z - 1).times.reverse_each.map {|depth|
+          ((padding(depth * 2 + 2) + depth_separator(@x)))
+        }).flatten.compact.join("\n"),
+        footer(@x)
+      ].join("\n")
+    end
+
+    def draw_depth depth, row
+      padded_with(depth * 2 + 1) do
+        joint_with '/' do
+          @x.times.map {|col|
+            'o'.center(3)
+          }
+        end
+      end
+    end
+
+    def joint_with char, &block
+      content = block.call
+      (['/'] * (content.size + 1)).zip(content).join
+    end
+
+    def padded_with depth, &block
+      padding(depth) + block.call
+    end
+
+    def wrap content, gutter = "\n"
+      ([gutter] * 2).join content
+    end
+
+    def separator size, gutter
+      (['+'] * (size + 1)).join(gutter)
+    end
+
+    def horizontal_separator size
+      separator size, '==='
+    end
+
+    def depth_separator size
+      separator size, '---'
+    end
+
+    def footer x
+      horizontal_separator x
+    end
+
+    def header x, z
+      padding(z * 2) + horizontal_separator(x)
+    end
+
+    def padding size
+      ' ' * size
+    end
 end
 
 class Position
